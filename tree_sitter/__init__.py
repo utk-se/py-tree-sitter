@@ -46,7 +46,7 @@ class Language:
         if cpp:
             if find_library("c++"):
                 compiler.add_library("c++")
-            elif find_library("stdc++"):
+            if find_library("stdc++"):
                 compiler.add_library("stdc++")
 
         if max(source_mtimes) <= output_mtime:
