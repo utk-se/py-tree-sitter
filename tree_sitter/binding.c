@@ -691,6 +691,7 @@ static PyObject *parser_set_language(Parser *self, PyObject *arg) {
   }
 
   TSLanguage *language = (TSLanguage *)PyLong_AsVoidPtr(language_id);
+  Py_XDECREF(language_id);
   if (!language) {
     PyErr_SetString(PyExc_ValueError, "Language ID must not be null");
     return NULL;
@@ -700,7 +701,7 @@ static PyObject *parser_set_language(Parser *self, PyObject *arg) {
   if (version < TREE_SITTER_MIN_COMPATIBLE_LANGUAGE_VERSION || TREE_SITTER_LANGUAGE_VERSION < version) {
     return PyErr_Format(
       PyExc_ValueError,
-      "Incompatible Language version %u. Must not be between %u and %u",
+      "Incompatible Language version %u. Must be between %u and %u",
       version,
       TREE_SITTER_MIN_COMPATIBLE_LANGUAGE_VERSION,
       TREE_SITTER_LANGUAGE_VERSION
@@ -788,9 +789,10 @@ static PyObject *query_captures(Query *self, PyObject *args, PyObject *kwargs) {
     const TSQueryCapture *capture = &match.captures[capture_index];
     PyObject *capture_node = node_new_internal(capture->node, node->tree);
     PyObject *capture_name = PyList_GetItem(self->capture_names, capture->index);
-    PyList_Append(result, PyTuple_Pack(2, capture_node, capture_name));
+    PyObject *item = PyTuple_Pack(2, capture_node, capture_name);
     Py_XDECREF(capture_node);
-    Py_XDECREF(capture_name);
+    PyList_Append(result, item);
+    Py_XDECREF(item);
   }
 
   return result;
